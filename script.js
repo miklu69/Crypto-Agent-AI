@@ -14,12 +14,7 @@ function calculateSignal(prices) {
   const ema13 = calculateEMA(prices, 13);
 
   let signal = "🟡 HOLD";
-let confidence = 60;
 
-if (change > 5) confidence = 95;
-else if (change > 2) confidence = 85;
-else if (change < -5) confidence = 95;
-else if (change < -2) confidence = 85;
   if (ema5 > ema13) {
     signal = "🟢 BUY";
   } else if (ema5 < ema13) {
@@ -65,7 +60,12 @@ async function startTrading() {
     const price = data.market_data.current_price.inr;
 
     const change = data.market_data.price_change_percentage_24h;
+let confidence = 60;
 
+if (change > 5) confidence = 95;
+else if (change > 2) confidence = 85;
+else if (change < -5) confidence = 95;
+else if (change < -2) confidence = 85;
     let signal = "🟡 HOLD";
 
     if (change > 2) signal = "🟢 BUY";
@@ -84,8 +84,9 @@ result.innerHTML = `
 <b>💰 Price:</b> ₹${price.toLocaleString()}<br>
 <b>📊 24h Change:</b> ${change.toFixed(2)}%<br><br>
 
-<b>🤖 AI Signal:</b> ${signal}<br><br>
 
+<b>🤖 AI Signal:</b> ${signal}<br>
+<b>⭐ Confidence:</b> ${confidence}%<br><br>
 <b>🎯 Entry:</b> ₹${entry.toLocaleString()}<br>
 <b>🛑 Stop Loss:</b> ₹${Math.round(stopLoss).toLocaleString()}<br>
 <b>🎯 Target 1:</b> ₹${Math.round(target1).toLocaleString()}<br>
