@@ -116,7 +116,13 @@ const reward = Math.abs(target1 - entry);
 
 const rr = (reward / risk).toFixed(2);
 let recommendation = "⚠️ Wait";
+let status = "🟡 Neutral";
 
+if (signal === "🟢 BUY" && confidence >= 80) {
+    status = "🟢 High Probability";
+} else if (signal === "🔴 SELL" && confidence >= 80) {
+    status = "🔴 High Probability";
+}
 if (signal === "🟢 BUY" && confidence >= 80 && rr >= 1.5) {
     recommendation = "✅ Strong Buy";
 } else if (signal === "🔴 SELL" && confidence >= 80 && rr >= 1.5) {
@@ -143,8 +149,9 @@ result.innerHTML = `
 <b>🎯 Target 1:</b> ₹${Math.round(target1).toLocaleString()}<br>
 <b>🚀 Target 2:</b> ₹${Math.round(target2).toLocaleString()}`;<br>
 <b>🏆 Target 3:</b> ₹${Math.round(target3).toLocaleString()}<br>
-<b>⚖️ Risk / Reward:</b> 1 : ${rr}
-    <b>📢 Recommendation:</b> ${recommendation}
+<b>⚖️ Risk / Reward:</b> 1 : ${rr} <br>
+  <b>📢 Recommendation:</b> ${recommendation}<br>
+  <b>🚦 Trade Status:</b> ${status}<br>
   document.getElementById("updated").
     innerHTML ="🕒 Last Updated: " + new Date().toLocaleTimeString();
   history.unshift({
