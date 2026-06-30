@@ -78,6 +78,19 @@ const ema13 = signalData.ema13;
 
 
     let confidence = 80;
+    let aiScore = confidence;
+
+if (trend === "🟢 BULLISH") {
+    aiScore += 5;
+}
+
+if (rsi < 30 || rsi > 70) {
+    aiScore += 5;
+}
+
+if (aiScore > 100) {
+    aiScore = 100;
+}
 let trend = "🟡 SIDEWAYS";
 
 if (signal === "🟢 BUY") {
