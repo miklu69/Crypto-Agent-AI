@@ -64,7 +64,6 @@ const url =
 `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${timeframe}&limit=30`;
 
     const response = await fetch(url);
-
     const data = await response.json();
 const prices = data.map(candle => Number(candle[4]));
 
@@ -79,7 +78,13 @@ const ema13 = signalData.ema13;
 
 
     let confidence = 80;
+let trend = "🟡 SIDEWAYS";
 
+if (signal === "🟢 BUY") {
+    trend = "🟢 BULLISH";
+} else if (signal === "🔴 SELL") {
+    trend = "🔴 BEARISH";
+  }
 if (signal === "🟢 BUY") {
     confidence = Math.min(95, Math.round((ema5 / ema13) * 100));
 } else if (signal === "🔴 SELL") {
@@ -99,8 +104,8 @@ result.innerHTML = `
 
 <b>📈 EMA 5:</b> ${ema5.toFixed(2)}<br>
 <b>📉 EMA 13:</b> ${ema13.toFixed(2)}<br><br>
-
 <b>🤖 AI Signal:</b> ${signal}<br>
+<b>📈 Market Trend:</b> ${trend}<br>
 <b>⭐ Confidence:</b> ${confidence}%<br><br>
 <b>🎯 Entry:</b> ₹${entry.toLocaleString()}<br>
 <b>🛑 Stop Loss:</b> ₹${Math.round(stopLoss).toLocaleString()}<br>
