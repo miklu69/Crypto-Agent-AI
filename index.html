@@ -1,1 +1,51 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Agent AI</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🚀 Crypto Agent AI</h1>
+
+<p>EMA 5 / EMA 13 Scalping Assistant</p>
+
+<input
+id="symbol"
+type="text"
+placeholder="BTC, ETH, SOL, BNB, XRP">
+
+<select id="timeframe">
+
+<option value="1m">1 Minute</option>
+
+<option value="5m">5 Minutes</option>
+
+<option value="15m">15 Minutes</option>
+
+</select>
+
+<button onclick="startTrading()">
+Analyze
+</button>
+
+<div id="result">
+
+Waiting for analysis...
+
+</div>
+
+</div>
+
+<script src="indicators.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
