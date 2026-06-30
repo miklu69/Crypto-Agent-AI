@@ -50,40 +50,47 @@ async function startTrading() {
 
   try {
 
-    const url =
-`https://api.coingecko.com/api/v3/coins/${coinMap[symbol]}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`;
+    const pair = symbol + "USDT";
+
+const url =
+`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${timeframe}&limit=30`;
 
     const response = await fetch(url);
 
     const data = await response.json();
+const prices = data.map(candle => Number(candle[4]));
 
-    const price = data.market_data.current_price.inr;
+const price = prices[prices.length - 1];
 
-    const change = data.market_data.price_change_percentage_24h;
-let confidence = 60;
+const signalData = calculateSignal(prices);
 
-if (change > 5) confidence = 95;
-else if (change > 2) confidence = 85;
-else if (change < -5) confidence = 95;
-else if (change < -2) confidence = 85;
-    let signal = "🟡 HOLD";
+const signal = signalData.signal;
+const ema5 = signalData.ema5;
+const ema13 = signalData.ema13;
+    
 
-    if (change > 2) signal = "🟢 BUY";
 
-    if (change < -2) signal = "🔴 SELL";
+    let confidence = 80;
+
+if (signal === "🟢 BUY") {
+    confidence = Math.min(95, Math.round((ema5 / ema13) * 100));
+} else if (signal === "🔴 SELL") {
+    confidence = Math.min(95, Math.round((ema13 / ema5) * 100));
+}
 
     const entry = price;
-const stopLoss = price * 0.98;
-const target1 = price * 1.03;
-const target2 = price * 1.05;
+const stopLoss = signal === "🟢 BUY" ? price * 0.98 : price * 1.02;
+const target1 = signal === "🟢 BUY" ? price * 1.03 : price * 0.97;
+const target2 = signal === "🟢 BUY" ? price * 1.05 : price * 0.95;
 
 result.innerHTML = `
 <h2>${symbol}</h2>
 
 <b>⏱️ Timeframe:</b> ${timeframe}<br>
 <b>💰 Price:</b> ₹${price.toLocaleString()}<br>
-<b>📊 24h Change:</b> ${change.toFixed(2)}%<br><br>
 
+<b>📈 EMA 5:</b> ${ema5.toFixed(2)}<br>
+<b>📉 EMA 13:</b> ${ema13.toFixed(2)}<br><br>
 
 <b>🤖 AI Signal:</b> ${signal}<br>
 <b>⭐ Confidence:</b> ${confidence}%<br><br>
