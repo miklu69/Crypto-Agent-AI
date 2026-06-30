@@ -1,3 +1,4 @@
+1et history=[];
 function calculateEMA(prices, period) {
   const k = 2 / (period + 1);
   let ema = prices[0];
@@ -136,6 +137,7 @@ result.innerHTML = `
 <b>🤖 AI Signal:</b> ${signal}<br>
 <b>📈 Market Trend:</b> ${trend}<br>
 <b>⭐ Confidence:</b> ${confidence}%<br><br>
+<b>🧠 AI Score:</b> ${aiScore}/100<br><br>
 <b>🎯 Entry:</b> ₹${entry.toLocaleString()}<br>
 <b>🛑 Stop Loss:</b> ₹${Math.round(stopLoss).toLocaleString()}<br>
 <b>🎯 Target 1:</b> ₹${Math.round(target1).toLocaleString()}<br>
@@ -143,8 +145,15 @@ result.innerHTML = `
 <b>🏆 Target 3:</b> ₹${Math.round(target3).toLocaleString()}<br>
 <b>⚖️ Risk / Reward:</b> 1 : ${rr}
     <b>📢 Recommendation:</b> ${recommendation}
-  document.getElementById("updated").innerHTML =
-"🕒 Last Updated: " + new Date().toLocaleTimeString();
+  document.getElementById("updated").
+    innerHTML ="🕒 Last Updated: " + new Date().toLocaleTimeString();
+  history.unshift({
+    coin: symbol,
+    signal: signal,
+    price: price
+});
+
+history = history.slice(0, 5);  
   } catch (e) {
 
     result.innerHTML = "❌ Failed to load data.";
