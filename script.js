@@ -70,7 +70,7 @@ const prices = data.map(candle => Number(candle[4]));
 const price = prices[prices.length - 1];
 
 const signalData = calculateSignal(prices);
-
+const rsi = calculateRSI(prices);
 const signal = signalData.signal;
 const ema5 = signalData.ema5;
 const ema13 = signalData.ema13;
@@ -101,7 +101,17 @@ const risk = Math.abs(entry - stopLoss);
 const reward = Math.abs(target1 - entry);
 
 const rr = (reward / risk).toFixed(2);
+let recommendation = "⚠️ Wait";
+
+if (signal === "🟢 BUY" && confidence >= 80 && rr >= 1.5) {
+    recommendation = "✅ Strong Buy";
+} else if (signal === "🔴 SELL" && confidence >= 80 && rr >= 1.5) {
+    recommendation = "❌ Strong Sell";
+} else {
+    recommendation = "⏳ No Trade";
+}
 result.innerHTML = `
+<b>📢 Recommendation:</b> ${recommendation}
 <h2>${symbol}</h2>
 
 <b>⏱️ Timeframe:</b> ${timeframe}<br>
