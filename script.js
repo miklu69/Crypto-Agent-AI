@@ -13,7 +13,15 @@ function calculateSignal(prices) {
   const ema5 = calculateEMA(prices, 5);
   const ema13 = calculateEMA(prices, 13);
 
-  let signal = "🟡 HOLD";
+  let trend = "🟡 SIDEWAYS";
+
+if (signal === "🟢 BUY") {
+    trend = "🟢 BULLISH";
+}
+
+if (signal === "🔴 SELL") {
+    trend = "🔴 BEARISH";
+}
 
   if (ema5 > ema13) {
     signal = "🟢 BUY";
