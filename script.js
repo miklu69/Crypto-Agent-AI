@@ -38,16 +38,24 @@ async function startTrading() {
 
     if (change < -2) signal = "🔴 SELL";
 
-    result.innerHTML = `
+    const entry = price;
+const stopLoss = price * 0.98;
+const target1 = price * 1.03;
+const target2 = price * 1.05;
+
+result.innerHTML = `
 <h2>${symbol}</h2>
 
-<b>Timeframe:</b> ${timeframe}<br>
+<b>⏱️ Timeframe:</b> ${timeframe}<br>
+<b>💰 Price:</b> ₹${price.toLocaleString()}<br>
+<b>📊 24h Change:</b> ${change.toFixed(2)}%<br><br>
 
-<b>Price:</b> ₹${price.toLocaleString()}<br>
+<b>🤖 AI Signal:</b> ${signal}<br><br>
 
-<b>24h:</b> ${change.toFixed(2)}%<br><br>
-
-<b>Signal:</b> ${signal}
+<b>🎯 Entry:</b> ₹${entry.toLocaleString()}<br>
+<b>🛑 Stop Loss:</b> ₹${Math.round(stopLoss).toLocaleString()}<br>
+<b>🎯 Target 1:</b> ₹${Math.round(target1).toLocaleString()}<br>
+<b>🚀 Target 2:</b> ₹${Math.round(target2).toLocaleString()}
 `;
 
   } catch (e) {
