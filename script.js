@@ -116,9 +116,9 @@ result.innerHTML = `
 <b>🎯 Entry:</b> ₹${entry.toLocaleString()}<br>
 <b>🛑 Stop Loss:</b> ₹${Math.round(stopLoss).toLocaleString()}<br>
 <b>🎯 Target 1:</b> ₹${Math.round(target1).toLocaleString()}<br>
-<b>🚀 Target 2:</b> ₹${Math.round(target2).toLocaleString()}
-`;
-
+<b>🚀 Target 2:</b> ₹${Math.round(target2).toLocaleString()}`;<br>
+<b>🏆 Target 3:</b> ₹${Math.round(target3).toLocaleString()}<br>
+<b>⚖️ Risk / Reward:</b> 1 : ${rr}
   } catch (e) {
 
     result.innerHTML = "❌ Failed to load data.";
