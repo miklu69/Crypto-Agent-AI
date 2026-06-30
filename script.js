@@ -136,8 +136,20 @@ result.innerHTML = `
   }
 
 }
+setInterval(() 
+  let seconds = 10;
+
 setInterval(() => {
-    const symbol = document.getElementById("symbol").value.trim();
+    seconds--;
+
+    if (seconds < 0) {
+        seconds = 10;
+    }
+
+    document.getElementById("countdown").innerHTML =
+        "⏳ Next update: " + seconds + "s";
+}, 1000);
+  => {  const symbol = document.getElementById("symbol").value.trim();
 
     if (symbol !== "") {
         startTrading();
