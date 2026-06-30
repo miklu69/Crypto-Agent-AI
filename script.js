@@ -14,7 +14,12 @@ function calculateSignal(prices) {
   const ema13 = calculateEMA(prices, 13);
 
   let signal = "🟡 HOLD";
+let confidence = 60;
 
+if (change > 5) confidence = 95;
+else if (change > 2) confidence = 85;
+else if (change < -5) confidence = 95;
+else if (change < -2) confidence = 85;
   if (ema5 > ema13) {
     signal = "🟢 BUY";
   } else if (ema5 < ema13) {
