@@ -95,13 +95,19 @@ if (signal === "🟢 BUY") {
 const stopLoss = signal === "🟢 BUY" ? price * 0.98 : price * 1.02;
 const target1 = signal === "🟢 BUY" ? price * 1.03 : price * 0.97;
 const target2 = signal === "🟢 BUY" ? price * 1.05 : price * 0.95;
+const target3 = signal === "🟢 BUY" ? price * 1.08 : price * 0.92;
 
+const risk = Math.abs(entry - stopLoss);
+const reward = Math.abs(target1 - entry);
+
+const rr = (reward / risk).toFixed(2);
 result.innerHTML = `
 <h2>${symbol}</h2>
 
 <b>⏱️ Timeframe:</b> ${timeframe}<br>
 <b>💰 Price:</b> ₹${price.toLocaleString()}<br>
-
+<br><b>🏆 Target 3:</b> ₹${Math.round(target3).toLocaleString()}<br>
+<b>⚖️ Risk / Reward:</b> 1 : ${rr}
 <b>📈 EMA 5:</b> ${ema5.toFixed(2)}<br>
 <b>📉 EMA 13:</b> ${ema13.toFixed(2)}<br><br>
 <b>🤖 AI Signal:</b> ${signal}<br>
