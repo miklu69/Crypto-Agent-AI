@@ -1,3 +1,32 @@
+function calculateEMA(prices, period) {
+  const k = 2 / (period + 1);
+  let ema = prices[0];
+
+  for (let i = 1; i < prices.length; i++) {
+    ema = prices[i] * k + ema * (1 - k);
+  }
+
+  return ema;
+}
+
+function calculateSignal(prices) {
+  const ema5 = calculateEMA(prices, 5);
+  const ema13 = calculateEMA(prices, 13);
+
+  let signal = "🟡 HOLD";
+
+  if (ema5 > ema13) {
+    signal = "🟢 BUY";
+  } else if (ema5 < ema13) {
+    signal = "🔴 SELL";
+  }
+
+  return {
+    ema5,
+    ema13,
+    signal
+  };
+}
 const coinMap = {
   BTC: "bitcoin",
   ETH: "ethereum",
