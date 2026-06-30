@@ -111,15 +111,15 @@ if (signal === "🟢 BUY" && confidence >= 80 && rr >= 1.5) {
     recommendation = "⏳ No Trade";
 }
 result.innerHTML = `
-<b>📢 Recommendation:</b> ${recommendation}
 <h2>${symbol}</h2>
 
 <b>⏱️ Timeframe:</b> ${timeframe}<br>
 <b>💰 Price:</b> ₹${price.toLocaleString()}<br>
-<br><b>🏆 Target 3:</b> ₹${Math.round(target3).toLocaleString()}<br>
+<b>🏆 Target 3:</b> ₹${Math.round(target3).toLocaleString()}<br>
 <b>⚖️ Risk / Reward:</b> 1 : ${rr}
 <b>📈 EMA 5:</b> ${ema5.toFixed(2)}<br>
 <b>📉 EMA 13:</b> ${ema13.toFixed(2)}<br><br>
+<b>📊 RSI:</b> ${rsi.toFixed(2)}<br>
 <b>🤖 AI Signal:</b> ${signal}<br>
 <b>📈 Market Trend:</b> ${trend}<br>
 <b>⭐ Confidence:</b> ${confidence}%<br><br>
@@ -129,6 +129,9 @@ result.innerHTML = `
 <b>🚀 Target 2:</b> ₹${Math.round(target2).toLocaleString()}`;<br>
 <b>🏆 Target 3:</b> ₹${Math.round(target3).toLocaleString()}<br>
 <b>⚖️ Risk / Reward:</b> 1 : ${rr}
+    <b>📢 Recommendation:</b> ${recommendation}
+  document.getElementById("updated").innerHTML =
+"🕒 Last Updated: " + new Date().toLocaleTimeString();
   } catch (e) {
 
     result.innerHTML = "❌ Failed to load data.";
