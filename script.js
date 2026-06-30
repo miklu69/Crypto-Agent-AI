@@ -153,7 +153,12 @@ result.innerHTML = `
     price: price
 });
 
-history = history.slice(0, 5);  
+history = history.slice(0, 5);
+    document.getElementById("history").innerHTML = history
+  .map(item =>
+    `• ${item.coin} - ${item.signal} - ₹${Math.round(item.price).toLocaleString()}`
+  )
+  .join("<br>");
   } catch (e) {
 
     result.innerHTML = "❌ Failed to load data.";
