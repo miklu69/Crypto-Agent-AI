@@ -1,56 +1,245 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Agent AI</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Crypto Agent AI — Premium EMA 5/13 scalping signals from Binance real-time data." />
+    <title>Crypto Agent AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
 
-<link rel="stylesheet" href="style.css">
-</head>
+    <!-- Fixed candlestick chart background (populated by JS) -->
+    <div class="chart-bg" id="chart-bg" aria-hidden="true"></div>
+    <div class="chart-blur" aria-hidden="true"></div>
 
-<body>
+    <div class="page">
 
-<div class="container">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <span class="brand-emoji" aria-hidden="true">🚀</span>
+            <div class="brand-words">
+              <span class="brand-name">Crypto Agent AI</span>
+              <span class="brand-sub">EMA 5 / EMA 13 Scalping Assistant</span>
+            </div>
+          </div>
+          <div class="live-chip" aria-label="Live data indicator">
+            <span class="live-dot" aria-hidden="true"></span>
+            LIVE
+          </div>
+        </div>
+      </header>
 
-<h1>🚀 Crypto Agent AI</h1>
+      <main class="main">
 
-<p>EMA 5 / EMA 13 Scalping Assistant</p>
+        <!-- Controls Card -->
+        <div class="card controls-card">
+          <div class="controls-inner">
+            <div class="field">
+              <label class="field-label" for="coin-select">💰 Asset</label>
+              <div class="sel-wrap">
+                <select id="coin-select" class="sel" aria-label="Select cryptocurrency pair">
+                  <option value="BTCUSDT">BTC / USDT</option>
+                  <option value="ETHUSDT">ETH / USDT</option>
+                  <option value="SOLUSDT">SOL / USDT</option>
+                  <option value="BNBUSDT">BNB / USDT</option>
+                  <option value="XRPUSDT">XRP / USDT</option>
+                  <option value="DOGEUSDT">DOGE / USDT</option>
+                </select>
+                <span class="sel-arrow" aria-hidden="true">▾</span>
+              </div>
+            </div>
 
-<input
-id="symbol"
-type="text"
-placeholder="BTC, ETH, SOL, BNB, XRP">
+            <div class="field">
+              <label class="field-label" for="timeframe-select">⏱ Timeframe</label>
+              <div class="sel-wrap">
+                <select id="timeframe-select" class="sel" aria-label="Select chart timeframe">
+                  <option value="1m">1 Minute</option>
+                  <option value="5m">5 Minutes</option>
+                  <option value="15m" selected>15 Minutes</option>
+                  <option value="30m">30 Minutes</option>
+                  <option value="1h">1 Hour</option>
+                  <option value="4h">4 Hours</option>
+                  <option value="1d">1 Day</option>
+                </select>
+                <span class="sel-arrow" aria-hidden="true">▾</span>
+              </div>
+            </div>
 
-<select id="timeframe">
+            <button id="analyze-btn" class="analyze-btn" aria-label="Run market analysis">
+              <span class="btn-content">🔍 Analyze Market</span>
+              <span class="btn-loading" aria-hidden="true">
+                <span class="spinner"></span> Analyzing...
+              </span>
+            </button>
+          </div>
+        </div>
 
-<option value="1m">1 Minute</option>
+        <!-- Error Banner -->
+        <div id="error-banner" class="error-banner hidden" role="alert" aria-live="assertive">
+          <span aria-hidden="true">⚠️</span>
+          <span id="error-message">An error occurred.</span>
+          <button id="error-close-btn" class="err-close" aria-label="Dismiss error">✕</button>
+        </div>
 
-<option value="5m">5 Minutes</option>
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state">
+          <div class="empty-glyph" aria-hidden="true">📡</div>
+          <div class="empty-title">Ready to Analyze</div>
+          <div class="empty-desc">Select an asset and timeframe, then hit <strong>Analyze Market</strong> to get live EMA signals fetched directly from Binance.</div>
+        </div>
 
-<option value="15m">15 Minutes</option>
+        <!-- Results Section -->
+        <section id="results-section" class="results hidden" aria-live="polite" aria-label="Analysis results">
 
-</select>
+          <!-- Signal Header Card -->
+          <div class="card signal-card" id="signal-banner">
+            <div class="signal-card-inner">
+              <div class="sig-meta">
+                <div class="sig-pair" id="signal-pair">BTC / USDT</div>
+                <div class="sig-tf" id="signal-timeframe">15m</div>
+              </div>
+              <div class="sig-block">
+                <div class="sig-lbl">🤖 AI Signal</div>
+                <div class="sig-val" id="signal-value">—</div>
+              </div>
+              <div class="sig-block sig-block-last">
+                <div class="sig-lbl">📈 Market Trend</div>
+                <div class="sig-trend" id="trend-value">—</div>
+              </div>
+            </div>
+          </div>
 
-<button onclick="startTrading()">
-Analyze
-</button>
+          <!-- Analysis Report Card -->
+          <div class="card result-card">
+            <div class="result-card-title">📊 Analysis Report</div>
+            <div class="result-rows">
 
-<div id="result">
-Waiting for analysis...
-</div>
-<p id="countdown">Next update: 10s</p>
-</div>
-<p id="updated">Last Updated: --</p>
-  <h3>📜 Signal History</h3>
+              <div class="rr">
+                <span class="rr-label">💎 Coin</span>
+                <span class="rr-val mono" id="signal-pair-2">—</span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">💵 Current Price</span>
+                <span class="rr-val mono" id="current-price">—</span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">📊 EMA 5</span>
+                <span class="rr-val mono" id="ema5-value">—</span>
+                <span class="pill" id="ema5-pill"></span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">📉 EMA 13</span>
+                <span class="rr-val mono" id="ema13-value">—</span>
+                <span class="pill" id="ema13-pill"></span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">🤖 AI Signal</span>
+                <span class="rr-val bold" id="signal-value-2">—</span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">📈 Market Trend</span>
+                <span class="rr-val bold" id="trend-value-2">—</span>
+              </div>
 
-<div id="history">
-No history yet.
-</div>
-</div>
+              <div class="rr-divider"></div>
 
-<script src="indicators.js"></script>
-<script src="script.js"></script>
+              <div class="rr">
+                <span class="rr-label">🎯 Entry Price</span>
+                <span class="rr-val mono entry-val" id="trade-entry">—</span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">🚪 Exit Price</span>
+                <span class="rr-val mono tp-val" id="exit-price">—</span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">🛑 Stop Loss</span>
+                <span class="rr-val mono sl-val" id="trade-sl">—</span>
+                <span class="badge-pct sl-pct" id="trade-sl-pct"></span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">🎯 Target 1</span>
+                <span class="rr-val mono tp-val" id="target1">—</span>
+                <span class="badge-pct tp-pct" id="t1-pct"></span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">🏆 Target 2</span>
+                <span class="rr-val mono tp-val" id="trade-tp">—</span>
+                <span class="badge-pct tp-pct" id="trade-tp-pct"></span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">💰 Target 3</span>
+                <span class="rr-val mono tp-val" id="target3">—</span>
+                <span class="badge-pct tp-pct" id="t3-pct"></span>
+              </div>
 
-</body>
+              <div class="rr-divider"></div>
+
+              <div class="rr">
+                <span class="rr-label">⚖️ Risk / Reward</span>
+                <span class="rr-val bold" id="risk-reward">—</span>
+              </div>
+              <div class="rr rr-conf">
+                <span class="rr-label">🔥 Confidence</span>
+                <div class="conf-group">
+                  <span class="rr-val bold" id="confidence-pct">—</span>
+                  <div class="conf-track">
+                    <div class="conf-fill" id="confidence-bar"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rr">
+                <span class="rr-label">💡 Recommendation</span>
+                <span class="rr-val rec-val" id="recommendation">—</span>
+              </div>
+              <div class="rr">
+                <span class="rr-label">🕐 Last Updated</span>
+                <span class="rr-val mono small-val" id="last-updated">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- EMA Spread Card -->
+          <div class="card ema-card">
+            <div class="ema-card-title">📐 EMA Spread Analysis</div>
+            <div class="ema-bar-row">
+              <span class="ema-bar-text">EMA 5 vs EMA 13 Spread</span>
+              <span class="ema-bar-pct" id="spread-pct">—</span>
+            </div>
+            <div class="ema-track" id="ema-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="ema-fill" id="ema-bar"></div>
+            </div>
+            <div class="ema-scale">
+              <span>0%</span><span>0.05%</span><span>0.1%+</span>
+            </div>
+            <div class="ema-note" id="analysis-note">Run an analysis to see market spread insights.</div>
+          </div>
+
+          <!-- Signal History Card -->
+          <div class="card history-card">
+            <div class="history-title">📋 Signal History</div>
+            <div id="signal-history-list" class="history-list">
+              <div class="history-empty">No signals yet — run your first analysis above.</div>
+            </div>
+          </div>
+
+        </section>
+      </main>
+
+      <footer class="site-footer" role="contentinfo">
+        <div class="footer-rule" aria-hidden="true">──────────────────────────────────────────</div>
+        <div class="footer-built">Built by</div>
+        <div class="footer-sig">𝓜𝓲𝓴𝓛𝓾</div>
+        <div class="footer-disclaimer">Not financial advice · Data via Binance Public API</div>
+      </footer>
+
+    </div>
+
+    <script type="module" src="./script.js"></script>
+  </body>
 </html>

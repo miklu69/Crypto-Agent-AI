@@ -1,71 +1,1021 @@
+/* ============================================================
+   Crypto Agent AI — style.css (Performance Optimized)
+   GPU-composited animations only · transform + opacity paths
+   ============================================================ */
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-body{
-background:#0f172a;
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-padding:20px;
+:root {
+  --bg:           #090909;
+  --surface:      rgba(14, 16, 24, 0.88);
+  --border:       rgba(0, 230, 118, 0.1);
+  --border-h:     rgba(0, 230, 118, 0.28);
+  --border-dim:   rgba(255, 255, 255, 0.06);
+
+  --green:        #00e676;
+  --red:          #ff4d4f;
+  --amber:        #f5a623;
+  --blue:         #00d4ff;
+
+  --text:         #e8edf5;
+  --text-dim:     #6b7390;
+  --text-muted:   #3a3f58;
+
+  --font:         'Inter', system-ui, -apple-system, sans-serif;
+  --mono:         'JetBrains Mono', 'Fira Code', monospace;
+
+  --r-card:       24px;
+  --r-input:      14px;
+  --r-chip:       100px;
+
+  /* Single shadow per card — no compound chains */
+  --shadow-card:  0 4px 28px rgba(0, 0, 0, 0.55);
+  --shadow-h:     0 6px 36px rgba(0, 0, 0, 0.7);
+  --glow:         0 0 28px rgba(0, 230, 118, 0.1);
+  --glow-h:       0 0 40px rgba(0, 230, 118, 0.18);
+
+  /* Transition: only transform + opacity (composited, no paint) */
+  --tr-fast:      150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --tr:           220ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.container{
-width:100%;
-max-width:420px;
-background:#1e293b;
-padding:20px;
-border-radius:15px;
-box-shadow:0 0 20px rgba(0,0,0,.4);
+/* ── Reset & Base ─────────────────────────── */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
-h1{
-text-align:center;
-margin-bottom:10px;
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-p{
-text-align:center;
-margin-bottom:20px;
-color:#cbd5e1;
+/* ── Candlestick Background ───────────────── */
+/* Fixed GPU layer — promoted with translateZ(0), rendered once */
+.chart-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.22;           /* Increased from 0.13 — much more visible */
+  transform: translateZ(0); /* GPU layer promotion — prevents repaints on scroll */
+  will-change: opacity;     /* Inform compositor this layer won't move */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
-input,select{
-width:100%;
-padding:12px;
-margin-bottom:15px;
-border:none;
-border-radius:10px;
-font-size:16px;
+.chart-bg svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-button{
-width:100%;
-padding:12px;
-background:#22c55e;
-color:white;
-border:none;
-border-radius:10px;
-font-size:18px;
-font-weight:bold;
-cursor:pointer;
+/* Simplified overlay — no backdrop-filter (expensive), pure gradient only */
+.chart-blur {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0, 230, 118, 0.03) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(9,9,9,0.25) 0%, transparent 40%, rgba(9,9,9,0.45) 100%);
+  transform: translateZ(0);
 }
 
-button:hover{
-background:#16a34a;
+/* ── Page Layout ──────────────────────────── */
+.page {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
 }
 
-#result{
-margin-top:20px;
-background:#0f172a;
-padding:15px;
-border-radius:10px;
-line-height:1.8;
-word-wrap:break-word;
+/* ── Top Bar ──────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 24px;
+  background: rgba(9, 9, 9, 0.9);
+  /* Reduced blur: 16px vs 24px — 33% cheaper */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-dim);
+  transform: translateZ(0); /* Keep topbar on its own compositor layer */
+}
+
+.topbar-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-emoji {
+  font-size: 1.55rem;
+  line-height: 1;
+  flex-shrink: 0;
+  /* Removed filter: drop-shadow — causes paint on every frame */
+}
+
+.brand-words {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.brand-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.brand-sub {
+  font-size: 0.63rem;
+  color: var(--text-dim);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.live-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  background: rgba(0, 230, 118, 0.07);
+  border: 1px solid rgba(0, 230, 118, 0.22);
+  border-radius: var(--r-chip);
+  font-size: 0.67rem;
+  font-weight: 800;
+  color: var(--green);
+  letter-spacing: 1.5px;
+  flex-shrink: 0;
+  /* Removed box-shadow — chips don't need glow */
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  will-change: opacity, transform;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* Only transform + opacity — fully composited, zero paint */
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.25; transform: scale(0.65); }
+}
+
+/* ── Main content ─────────────────────────── */
+.main {
+  flex: 1;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 18px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Card ─────────────────────────────────── */
+/* contain: layout style — browser skips re-layout outside this card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  /* Reduced blur: 12px vs 24px — 50% cheaper, still looks glassmorphic */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card);
+  contain: layout style;
+  /* Transition only opacity of the shadow — use layered pseudo-trick */
+  transition: box-shadow var(--tr);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-h), var(--glow-h);
+}
+
+/* ── Controls Card ────────────────────────── */
+.controls-card {
+  padding: 22px 24px;
+}
+
+.controls-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr minmax(150px, auto);
+  gap: 14px;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.sel-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sel {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-input);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 10px 36px 10px 14px;
+  cursor: pointer;
+  outline: none;
+  /* Only transition opacity — avoid background/border repaints */
+  transition: opacity var(--tr-fast);
+}
+
+.sel:hover {
+  opacity: 0.85;
+}
+
+.sel:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(0, 230, 118, 0.18);
+}
+
+.sel option {
+  background: #111520;
+  color: var(--text);
+}
+
+.sel-arrow {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+}
+
+/* ── Analyze Button ───────────────────────── */
+.analyze-btn {
+  position: relative;
+  height: 44px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--r-input);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.87rem;
+  font-weight: 800;
+  color: #060a0a;
+  background: linear-gradient(135deg, #00e676, #00c9e0);
+  white-space: nowrap;
+  overflow: hidden;
+  letter-spacing: 0.2px;
+  /* Only transform + opacity — no filter, no box-shadow transitions */
+  transition: transform var(--tr-fast), opacity var(--tr-fast);
+  will-change: transform;
+  box-shadow: 0 4px 20px rgba(0, 230, 118, 0.38);
+}
+
+.analyze-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.93;
+}
+
+.analyze-btn:active {
+  transform: translateY(0px);
+  opacity: 1;
+}
+
+.analyze-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.btn-content,
+.btn-loading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  padding: 0 24px;
+  /* Only opacity + transform — GPU composited */
+  transition: opacity var(--tr-fast), transform var(--tr-fast);
+}
+
+.btn-loading {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.analyze-btn.loading .btn-content {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.analyze-btn.loading .btn-loading {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Spinner ──────────────────────────────── */
+.spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  border-top-color: rgba(0, 0, 0, 0.85);
+  border-radius: 50%;
+  flex-shrink: 0;
+  will-change: transform;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Error Banner ─────────────────────────── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  background: rgba(255, 77, 79, 0.09);
+  border: 1px solid rgba(255, 77, 79, 0.28);
+  border-radius: 16px;
+  color: #ff9fa0;
+  font-size: 0.875rem;
+  animation: fadeUp 0.22s ease;
+}
+
+#error-message { flex: 1; min-width: 0; }
+
+.err-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 159, 160, 0.45);
+  font-size: 0.83rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: opacity var(--tr-fast);
+  flex-shrink: 0;
+}
+.err-close:hover { opacity: 0.8; }
+
+/* ── Empty State ──────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 72px 20px;
+  gap: 12px;
+  animation: fadeUp 0.35s ease;
+}
+
+.empty-glyph {
+  font-size: 3.2rem;
+  line-height: 1;
+  margin-bottom: 6px;
+  /* Removed filter: drop-shadow — causes paint on every frame */
+}
+
+.empty-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.empty-desc {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  max-width: 340px;
+  line-height: 1.7;
+}
+
+.empty-desc strong { color: var(--green); }
+
+/* ── Results Section ──────────────────────── */
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  /* Fade-in: only opacity + translateY — composited, no paint */
+  animation: fadeUp 0.3s ease;
+}
+
+/* ── Signal Card ──────────────────────────── */
+.signal-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Signal-specific border + glow via single shadow value */
+.signal-card.signal-buy  {
+  border-color: rgba(0, 230, 118, 0.28);
+  box-shadow: 0 0 40px rgba(0, 230, 118, 0.12), var(--shadow-card);
+}
+.signal-card.signal-sell {
+  border-color: rgba(255, 77, 79, 0.28);
+  box-shadow: 0 0 40px rgba(255, 77, 79, 0.1), var(--shadow-card);
+}
+.signal-card.signal-hold {
+  border-color: rgba(245, 166, 35, 0.28);
+  box-shadow: 0 0 40px rgba(245, 166, 35, 0.08), var(--shadow-card);
+}
+
+.signal-card-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sig-meta {
+  padding: 22px 24px;
+  border-right: 1px solid var(--border-dim);
+  min-width: 0;
+}
+
+.sig-pair {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sig-tf {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-top: 5px;
+}
+
+.sig-block {
+  padding: 22px 16px;
+  text-align: center;
+  border-right: 1px solid var(--border-dim);
+  min-width: 0;
+}
+
+.sig-block-last {
+  border-right: none;
+}
+
+.sig-lbl {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 7px;
+}
+
+.sig-val {
+  font-size: 1.85rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  /* text-shadow is GPU-composited — cheap */
+}
+
+/* No transition on color/text-shadow — instant swap on signal change */
+.sig-val.buy  { color: var(--green); text-shadow: 0 0 20px rgba(0,230,118,0.45); }
+.sig-val.sell { color: var(--red);   text-shadow: 0 0 20px rgba(255,77,79,0.45); }
+.sig-val.hold { color: var(--amber); text-shadow: 0 0 20px rgba(245,166,35,0.4); }
+
+.sig-trend {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.sig-trend.bullish  { color: var(--green); }
+.sig-trend.bearish  { color: var(--red); }
+.sig-trend.sideways { color: var(--amber); }
+
+/* ── Result Card ──────────────────────────── */
+.result-card {
+  overflow: hidden;
+}
+
+.result-card-title {
+  padding: 18px 24px 14px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.result-rows {
+  padding: 6px 0;
+}
+
+.rr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  min-width: 0;
+}
+
+/* Hover: background color change avoids repaints via flat color (no gradient) */
+.rr:hover {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.rr-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 500;
+  min-width: 155px;
+  flex-shrink: 0;
+}
+
+.rr-val {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rr-val.mono      { font-family: var(--mono); font-size: 0.82rem; }
+.rr-val.small-val { font-size: 0.74rem; line-height: 1.5; }
+.rr-val.bold      { font-weight: 700; }
+
+.rr-val.entry-val { color: var(--blue);  font-weight: 700; }
+.rr-val.sl-val    { color: var(--red);   font-weight: 700; }
+.rr-val.tp-val    { color: var(--green); font-weight: 700; }
+.rr-val.rec-val   { font-weight: 600; line-height: 1.45; white-space: normal; }
+
+.rr-divider {
+  height: 1px;
+  background: var(--border-dim);
+  margin: 6px 24px;
+}
+
+/* ── Confidence bar ───────────────────────── */
+.rr-conf { align-items: center; }
+
+.conf-group {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.conf-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* scaleX animation — GPU composited, zero layout reflow */
+.conf-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.conf-fill.sell {
+  background: linear-gradient(90deg, var(--red), #ff9fa0);
+}
+
+.conf-fill.hold {
+  background: linear-gradient(90deg, var(--amber), #fcd34d);
+}
+
+/* ── Pills ────────────────────────────────── */
+.pill {
+  font-size: 0.57rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.pill.above {
+  background: rgba(0, 230, 118, 0.1);
+  color: var(--green);
+  border: 1px solid rgba(0, 230, 118, 0.2);
+}
+
+.pill.below {
+  background: rgba(255, 77, 79, 0.1);
+  color: var(--red);
+  border: 1px solid rgba(255, 77, 79, 0.2);
+}
+
+/* ── Badge pct ────────────────────────────── */
+.badge-pct {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  flex-shrink: 0;
+}
+
+.badge-pct.sl-pct {
+  background: rgba(255, 77, 79, 0.1);
+  color: var(--red);
+  border: 1px solid rgba(255, 77, 79, 0.18);
+}
+
+.badge-pct.tp-pct {
+  background: rgba(0, 230, 118, 0.1);
+  color: var(--green);
+  border: 1px solid rgba(0, 230, 118, 0.18);
+}
+
+/* Signal value colors in result card */
+#signal-value-2.buy  { color: var(--green); }
+#signal-value-2.sell { color: var(--red); }
+#signal-value-2.hold { color: var(--amber); }
+
+#trend-value-2.bullish  { color: var(--green); }
+#trend-value-2.bearish  { color: var(--red); }
+#trend-value-2.sideways { color: var(--amber); }
+
+/* ── EMA Card ─────────────────────────────── */
+.ema-card {
+  padding: 22px 24px;
+}
+
+.ema-card-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.ema-bar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.ema-bar-text {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.ema-bar-pct {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ema-track {
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+/* scaleX animation — GPU composited, zero layout reflow */
+.ema-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ema-fill.bearish  { background: linear-gradient(90deg, var(--red), #ff9fa0); }
+.ema-fill.sideways { background: linear-gradient(90deg, var(--amber), #fcd34d); }
+
+.ema-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  margin-bottom: 14px;
+}
+
+.ema-note {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.65;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.022);
+  border-radius: 12px;
+  border: 1px solid var(--border-dim);
+}
+
+/* ── History Card ─────────────────────────── */
+.history-card {
+  padding: 22px 24px;
+}
+
+.history-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.history-empty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 10px 0;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  background: rgba(255,255,255,0.022);
+  border-radius: 11px;
+  border: 1px solid var(--border-dim);
+  font-size: 0.78rem;
+  /* fadeUp uses only transform + opacity */
+  animation: fadeUp 0.25s ease;
+  min-width: 0;
+}
+
+.history-item:hover {
+  background: rgba(255,255,255,0.038);
+}
+
+.hist-chip {
+  padding: 2px 9px;
+  border-radius: 100px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+.hist-chip.buy  { background: rgba(0,230,118,0.11); color: var(--green); border: 1px solid rgba(0,230,118,0.22); }
+.hist-chip.sell { background: rgba(255,77,79,0.09);  color: var(--red);   border: 1px solid rgba(255,77,79,0.22); }
+.hist-chip.hold { background: rgba(245,166,35,0.09); color: var(--amber); border: 1px solid rgba(245,166,35,0.22); }
+
+.hist-pair  { font-weight: 700; color: var(--text); flex-shrink: 0; }
+.hist-tf    { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); flex-shrink: 0; }
+
+.hist-price {
+  font-family: var(--mono);
+  font-size: 0.73rem;
+  color: var(--text-dim);
+  flex: 1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.hist-time {
+  font-size: 0.67rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  text-align: right;
+}
+
+/* ── Footer ───────────────────────────────── */
+.site-footer {
+  text-align: center;
+  padding: 44px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-rule {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  opacity: 0.45;
+}
+
+.footer-built {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.3px;
+}
+
+.footer-sig {
+  font-family: 'Brush Script MT', 'Segoe Script', 'Apple Chancery', cursive;
+  font-size: 1.55rem;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 1px;
+  line-height: 1.4;
+}
+
+.footer-disclaimer {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  letter-spacing: 0.2px;
+}
+
+/* ── Utilities ────────────────────────────── */
+.hidden {
+  display: none !important;
+}
+
+/* transform + opacity only — composited, no paint, no layout */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Mobile — 620px ───────────────────────── */
+@media (max-width: 620px) {
+  .main {
+    padding: 16px 12px 44px;
+    gap: 14px;
+  }
+
+  .controls-card {
+    padding: 16px 16px;
+  }
+
+  .controls-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 11px;
+  }
+
+  .analyze-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 48px;
+    font-size: 0.9rem;
+  }
+
+  .signal-card-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sig-meta {
+    grid-column: 1 / -1;
+    border-right: none;
+    border-bottom: 1px solid var(--border-dim);
+    padding: 16px 18px;
+  }
+
+  .sig-block {
+    padding: 14px 12px;
+  }
+
+  .sig-val { font-size: 1.5rem; }
+
+  .result-card-title,
+  .ema-card-title,
+  .history-title {
+    padding: 16px 18px 12px;
+    font-size: 0.7rem;
+  }
+
+  .ema-card,
+  .history-card {
+    padding: 16px 18px;
+  }
+
+  .rr {
+    padding: 9px 18px;
+    gap: 8px;
+  }
+
+  .rr-label {
+    min-width: 130px;
+    font-size: 0.76rem;
+  }
+
+  .rr-val { font-size: 0.82rem; }
+
+  .rr-divider { margin: 5px 18px; }
+
+  .history-item {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .hist-price { flex-basis: 100%; text-align: left; }
+}
+
+/* ── Mobile — 420px ───────────────────────── */
+@media (max-width: 420px) {
+  .brand-sub    { display: none; }
+  .live-chip    { padding: 4px 10px; font-size: 0.6rem; }
+  .topbar-inner { height: 56px; }
+  .topbar       { padding: 0 12px; }
+  .sig-val      { font-size: 1.35rem; }
+  .rr-label     { min-width: 110px; font-size: 0.72rem; }
+  .rr           { padding: 8px 14px; }
+  .rr-divider   { margin: 4px 14px; }
+
+  .controls-card   { padding: 14px 14px; }
+  .ema-card,
+  .history-card    { padding: 14px 14px; }
+}
+
+/* ── Reduced Motion ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
